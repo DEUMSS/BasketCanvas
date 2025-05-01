@@ -35,19 +35,17 @@
         // Paramètres du panier
         const hoopWidth = 60;
         const hoopHeight = 10;
-        const backboardWidth = 80;
-        const backboardHeight = 100;
         const netWidth = 80;
         const netHeight = 60;
         const hoopX = width - 600;
         const hoopY = height / 3;
+        const phiscalRightHoopX = hoopX + 40;
+        const phiscalLeftHoopX = hoopX - 40;
 
-        // Création du panneau en pseudo 3D (visuel uniquement)
-        const backboard = { x: hoopX, y: hoopY, width: backboardWidth, height: backboardHeight };
         
         // Création des éléments du panier
-        const rimLeft = Bodies.circle(hoopX - 40, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } }); 
-        const rimRight = Bodies.circle(hoopX + 40, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } });
+        const rimLeft = Bodies.circle(phiscalLeftHoopX, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } }); 
+        const rimRight = Bodies.circle(phiscalRightHoopX, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } });
 
         World.add(world, [ground, leftWall, rightWall, rimLeft, rimRight]);
 
@@ -90,24 +88,21 @@
             let forceMagnitude = Math.min(magnitude, 5);
             Matter.Body.applyForce(ball, ball.position, { x: force.x * forceMagnitude * 0.025 , y: force.y * forceMagnitude * 0.025});
             
-            /*if (groundActive) {
+            if (groundActive) {
                 World.remove(world, ground);
                 groundActive = false;
-            }*/
+            }
         });
 
-        /*Events.on(engine, "afterUpdate", () => {
-            if (ball.position.y > height) {
-                Matter.Body.setPosition(ball, { x: width / 2, y: height - 110 });
-                Matter.Body.setVelocity(ball, { x: 0, y: 0 });
-                Matter.Body.setAngularVelocity(ball, 0);
-                
+        Events.on(engine, "afterUpdate", () => {
+            // Vérifie si la balle passe dans le panier
+            if (ball.position.x > phiscalLeftHoopX && ball.position.x < phiscalRightHoopX && ball.position.y > hoopY + 40 && ball.position.y < hoopY + 60) {
                 if (!groundActive) {
                     World.add(world, ground);
                     groundActive = true;
                 }
             }
-        });*/
+        });
 
         function drawVector(context) {
             if (dragging) {
