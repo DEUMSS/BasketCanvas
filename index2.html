@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball avec Matter.js</title>
+    <style>
+        body { margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; background: #eee; }
+        canvas { background: #ccc; }
+    </style>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+   <script>
+        const { Engine, Render, World, Bodies, Events, Vector } = Matter;
+
+        const engine = Engine.create();
+        const world = engine.world;
+        engine.gravity.y = 1;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const render = Render.create({
+            element: document.body,
+            engine: engine,
+            options: { width, height, wireframes: false }
+        });
+
+      
+        const ground = Bodies.rectangle(width / 2, height - 100, width, 40, { isStatic: true });
+        const leftWall = Bodies.rectangle(0, height / 2, 40, height, { isStatic: true });
+        const rightWall = Bodies.rectangle(width, height / 2, 40, height, { isStatic: true });
+        
+        // Paramètres du panier
+        const hoopWidth = 60;
+        const hoopHeight = 10;
+        const backboardWidth = 80;
+        const backboardHeight = 100;
+        const netWidth = 40;
+        const netHeight = 40;
+        const hoopX = width - 120;
+        const hoopY = height / 3;
+
+        // Création du panneau en pseudo 3D (visuel uniquement)
+        const backboard = { x: hoopX, y: hoopY, width: backboardWidth, height: backboardHeight };
+        
+        // Création des éléments du panier
+        const rimLeft = Bodies.rectangle(hoopX - hoopWidth, hoopY + 50, 10, hoopHeight, { isStatic: true, render: { fillStyle: "orange" } });
+        const rimRight = Bodies.rectangle(hoopX, hoopY + 50, 10, hoopHeight, { isStatic: true, render: { fillStyle: "orange" } });
+
+        World.add(world, [ground, leftWall, rightWall, rimLeft, rimRight]);
+
+        let ball = Bodies.circle(width / 2, height - 110, 20, { restitution: 0.7 });
+        World.add(world, ball);
+        let groundActive = true;
+
+        let startX, startY;
+        let dragging = false;
+        let currentX, currentY;
+
+        window.addEventListener("mousedown", (event) => {
+            const mousePos = { x: event.clientX, y: event.clientY };
+            if (Matter.Bounds.contains(ball.bounds, mousePos)) {
+                startX = event.clientX;
+                startY = event.clientY;
+                dragging = true;
+            }
+        });
+        
+        window.addEventListener("mousemove", (event) => {
+            if (dragging) {
+                currentX = event.clientX;
+                currentY = event.clientY;
+            }
+        });
+        
+        window.addEventListener("mouseup", (event) => {
+            if (!dragging) return;
+            dragging = false;
+            const endX = event.clientX;
+            const endY = event.clientY;
+            
+            const dx = startX - endX;
+            const dy = startY - endY;
+            let magnitude = Math.sqrt(dx * dx + dy * dy) * 0.02;
+            magnitude = Math.min(magnitude, 5);
+            
+            const force = Vector.normalise({ x: dx, y: dy });
+            let forceMagnitude = Math.min(magnitude, 5);
+            Matter.Body.applyForce(ball, ball.position, { x: force.x * forceMagnitude * 0.025 , y: force.y * forceMagnitude * 0.025});
+            
+            if (groundActive) {
+                World.remove(world, ground);
+                groundActive = false;
+            }
+        });
+
+        Events.on(engine, "afterUpdate", () => {
+            if (ball.position.y > height) {
+                Matter.Body.setPosition(ball, { x: width / 2, y: height - 110 });
+                Matter.Body.setVelocity(ball, { x: 0, y: 0 });
+                Matter.Body.setAngularVelocity(ball, 0);
+                
+                if (!groundActive) {
+                    World.add(world, ground);
+                    groundActive = true;
+                }
+            }
+        });
+
+        function drawVector(context) {
+            if (dragging) {
+                context.save();
+                context.beginPath();
+                context.moveTo(ball.position.x, ball.position.y);
+                // on change currentX et currentY pour avoir
+                // le point symétrique par rapport à l'axe vertical
+                // passant par le centre de la balle
+                let currentXMod = ball.position.x + (ball.position.x - currentX);
+                let currentYMod = ball.position.y - (currentY - ball.position.y)
+                context.lineTo(currentXMod, currentYMod);
+                context.strokeStyle = "red";
+                context.lineWidth = 2;
+                context.stroke();
+                context.restore();
+            }
+        }
+
+        function drawNet(context) {
+            context.save();
+            context.strokeStyle = "white";
+            context.lineWidth = 2;
+
+            const netRows = 5;
+            const netCols = 6;
+            const spacingX = hoopWidth / netCols;
+            const spacingY = netHeight / netRows;
+
+            // Dessin des diagonales / (haut gauche vers bas droite)
+            for (let row = 0; row < netRows; row++) {
+                for (let col = 0; col < netCols; col++) {
+                    const startX = hoopX - hoopWidth / 2 + col * spacingX;
+                    const startY = hoopY + 50 + row * spacingY;
+                    const endX = startX + spacingX;
+                    const endY = startY + spacingY;
+
+                    context.beginPath();
+                    context.moveTo(startX, startY);
+                    context.lineTo(endX, endY);
+                    context.stroke();
+                }
+            }
+
+        // Dessin des diagonales \ (haut droite vers bas gauche)
+        for (let row = 0; row < netRows; row++) {
+            for (let col = 0; col < netCols; col++) {
+                const startX = hoopX - hoopWidth / 2 + (col + 1) * spacingX;
+                const startY = hoopY + 50 + row * spacingY;
+                const endX = startX - spacingX;
+                const endY = startY + spacingY;
+
+                context.beginPath();
+                context.moveTo(startX, startY);
+                context.lineTo(endX, endY);
+                context.stroke();
+            }
+        }
+
+        context.restore();
+}
+
+
+      function dessineBallonBasket(context) {
+        // on prendra le x, y de l'objet ball
+        render.canvas.getContext("2d");
+        context.save();
+        context.fillStyle="red"
+        context.translate(ball.position.x, ball.position.y);
+        context.beginPath();
+        context.arc(0, 0, 20, 0, Math.PI*2);
+        context.fill();
+        context.restore();
+      }
+        
+       Matter.Runner.run(engine);
+        //Render.run(render);
+        (function renderLoop() {
+            const context = render.context;
+            Render.world(render);
+            
+            drawNet(context);
+            drawVector(context);
+            //on dessine le ballon
+            dessineBallonBasket(context);
+            requestAnimationFrame(renderLoop);
+        })();
+
+       
+    </script>
+</body>
+</html> 
