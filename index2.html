@@ -37,17 +37,17 @@
         const hoopHeight = 10;
         const backboardWidth = 80;
         const backboardHeight = 100;
-        const netWidth = 40;
-        const netHeight = 40;
-        const hoopX = width - 120;
+        const netWidth = 80;
+        const netHeight = 60;
+        const hoopX = width - 600;
         const hoopY = height / 3;
 
         // Création du panneau en pseudo 3D (visuel uniquement)
         const backboard = { x: hoopX, y: hoopY, width: backboardWidth, height: backboardHeight };
         
         // Création des éléments du panier
-        const rimLeft = Bodies.rectangle(hoopX - hoopWidth, hoopY + 50, 10, hoopHeight, { isStatic: true, render: { fillStyle: "orange" } });
-        const rimRight = Bodies.rectangle(hoopX, hoopY + 50, 10, hoopHeight, { isStatic: true, render: { fillStyle: "orange" } });
+        const rimLeft = Bodies.circle(hoopX - 40, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } }); 
+        const rimRight = Bodies.circle(hoopX + 40, hoopY + 50, 5, { isStatic: true, render: { fillStyle: "orange", opacity : 0 } });
 
         World.add(world, [ground, leftWall, rightWall, rimLeft, rimRight]);
 
@@ -90,13 +90,13 @@
             let forceMagnitude = Math.min(magnitude, 5);
             Matter.Body.applyForce(ball, ball.position, { x: force.x * forceMagnitude * 0.025 , y: force.y * forceMagnitude * 0.025});
             
-            if (groundActive) {
+            /*if (groundActive) {
                 World.remove(world, ground);
                 groundActive = false;
-            }
+            }*/
         });
 
-        Events.on(engine, "afterUpdate", () => {
+        /*Events.on(engine, "afterUpdate", () => {
             if (ball.position.y > height) {
                 Matter.Body.setPosition(ball, { x: width / 2, y: height - 110 });
                 Matter.Body.setVelocity(ball, { x: 0, y: 0 });
@@ -107,7 +107,7 @@
                     groundActive = true;
                 }
             }
-        });
+        });*/
 
         function drawVector(context) {
             if (dragging) {
@@ -118,31 +118,32 @@
                 // le point symétrique par rapport à l'axe vertical
                 // passant par le centre de la balle
                 let currentXMod = ball.position.x + (ball.position.x - currentX);
-                let currentYMod = ball.position.y - (currentY - ball.position.y)
+                let currentYMod = ball.position.y - (currentY - ball.position.y);
                 context.lineTo(currentXMod, currentYMod);
-                context.strokeStyle = "red";
+                context.setLineDash([5, 5]); // Définit un motif de pointillés (5px trait, 5px espace)
+                context.strokeStyle = "white";
                 context.lineWidth = 2;
                 context.stroke();
                 context.restore();
             }
         }
 
-        function drawNet(context) {
+        function drawBasket(context) {
             context.save();
             context.strokeStyle = "white";
             context.lineWidth = 2;
 
             const netRows = 5;
-            const netCols = 6;
-            const spacingX = hoopWidth / netCols;
+            const netCols = 7;
+            const spacingX = netWidth / netCols;
             const spacingY = netHeight / netRows;
 
             // Dessin des diagonales / (haut gauche vers bas droite)
             for (let row = 0; row < netRows; row++) {
                 for (let col = 0; col < netCols; col++) {
-                    const startX = hoopX - hoopWidth / 2 + col * spacingX;
-                    const startY = hoopY + 50 + row * spacingY;
-                    const endX = startX + spacingX;
+                    const startX = (hoopX - netWidth / 2 + col * spacingX);
+                    const startY = hoopY + 40 + row * spacingY;
+                    const endX = startX + spacingX ;
                     const endY = startY + spacingY;
 
                     context.beginPath();
@@ -152,51 +153,59 @@
                 }
             }
 
-        // Dessin des diagonales \ (haut droite vers bas gauche)
-        for (let row = 0; row < netRows; row++) {
-            for (let col = 0; col < netCols; col++) {
-                const startX = hoopX - hoopWidth / 2 + (col + 1) * spacingX;
-                const startY = hoopY + 50 + row * spacingY;
-                const endX = startX - spacingX;
-                const endY = startY + spacingY;
+            // Dessin des diagonales \ (haut droite vers bas gauche)
+            for (let row = 0; row < netRows; row++) {
+                for (let col = 0; col < netCols; col++) {
+                    const startX = (hoopX - netWidth / 2 + (col + 1) * spacingX) ;
+                    const startY = hoopY + 40 + row * spacingY;
+                    const endX = startX - spacingX ;
+                    const endY = startY + spacingY;
 
-                context.beginPath();
-                context.moveTo(startX, startY);
-                context.lineTo(endX, endY);
-                context.stroke();
+                    context.beginPath();
+                    context.moveTo(startX, startY);
+                    context.lineTo(endX, endY);
+                    context.stroke();
+                }
             }
+
+            context.restore();
+
+            context.save();
+            context.strokeStyle = "#D1441C"; // rouge brique
+            context.lineWidth = 10;
+            context.beginPath();
+            context.ellipse(hoopX, hoopY + 50, hoopWidth / 1.5, 15, 0, 0, Math.PI * 2);
+            context.stroke();
+            context.restore();
         }
 
-        context.restore();
-}
 
-
-      function dessineBallonBasket(context) {
-        // on prendra le x, y de l'objet ball
-        render.canvas.getContext("2d");
-        context.save();
-        context.fillStyle="red"
-        context.translate(ball.position.x, ball.position.y);
-        context.beginPath();
-        context.arc(0, 0, 20, 0, Math.PI*2);
-        context.fill();
-        context.restore();
-      }
-        
-       Matter.Runner.run(engine);
-        //Render.run(render);
-        (function renderLoop() {
-            const context = render.context;
-            Render.world(render);
+        function dessineBallonBasket(context) {
+            // on prendra le x, y de l'objet ball
+            render.canvas.getContext("2d");
+            context.save();
+            context.fillStyle="red"
+            context.translate(ball.position.x, ball.position.y);
+            context.beginPath();
+            context.arc(0, 0, 20, 0, Math.PI*2);
+            context.fill();
+            context.restore();
+        }
             
-            drawNet(context);
-            drawVector(context);
-            //on dessine le ballon
-            dessineBallonBasket(context);
-            requestAnimationFrame(renderLoop);
-        })();
+        Matter.Runner.run(engine);
+            //Render.run(render);
+            (function renderLoop() {
+                const context = render.context;
+                Render.world(render);
+                
+                drawBasket(context);
+                drawVector(context);
+                //on dessine le ballon
+                dessineBallonBasket(context);
+                requestAnimationFrame(renderLoop);
+            })();
 
        
     </script>
 </body>
-</html> 
+</html>
