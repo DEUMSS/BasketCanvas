@@ -8,7 +8,7 @@ let needsReset = false;
 let ballLaunched = false;
 let level = 1;
 
-// Création du renderer
+// Création du render
 const render = Render.create({
     element: document.body,
     engine: engine,
@@ -22,6 +22,7 @@ const render = Render.create({
 // Mise à jour du jeu au passage dans le panier
 let ballInHoopArea = false;
 
+//Passage au niveau suivant et ajout d'obstacles
 function nextLevel(){
     console.log("Next level!");
     level ++;
@@ -37,7 +38,7 @@ function nextLevel(){
     }
 };
 
-
+//Détéction de l'entrée de la balle dans le panier et de la chute de la balle
 Events.on(engine, "afterUpdate", () => {
     const isInHoopArea =
         ball.position.x > phiscalLeftHoopX &&

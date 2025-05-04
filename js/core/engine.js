@@ -11,7 +11,7 @@ const render = Matter.Render.create({
     options: { width, height, wireframes: false }
 });
 
-// Création des murs
+// Création des murs et du sol
 const ground = Matter.Bodies.rectangle(width / 2, height - 100, width, 40, { isStatic: true });
 const leftWall = Matter.Bodies.rectangle(0, height / 2, 40, height, { isStatic: true });
 const rightWall = Matter.Bodies.rectangle(width, height / 2, 40, height, { isStatic: true });
@@ -20,6 +20,7 @@ Matter.World.add(world, [ground, leftWall, rightWall]);
 
 let groundActive = true;
 
+//Création de nouveaux obstacles
 function newObstacle() {
     const obstacle = Matter.Bodies.rectangle(Math.random() * width - 90, Math.random() * height - 150, 50, 50, { isStatic: true, render: { fillStyle: 'purple' }});
     Matter.World.add(world, obstacle);

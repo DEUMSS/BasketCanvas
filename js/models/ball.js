@@ -1,5 +1,6 @@
 import { world, width, height, ground } from '../core/engine.js';
 
+//Création de la balle
 const ball = Matter.Bodies.circle(width / 2, height - 110, 20, { restitution: 0.7 });
 Matter.World.add(world, ball);
 
@@ -7,6 +8,7 @@ let startX, startY;
 let dragging = false;
 let currentX, currentY;
 
+//Détection de la souris pour charger le tir
 window.addEventListener("mousedown", (event) => {
     const mousePos = { x: event.clientX, y: event.clientY };
     if (Matter.Bounds.contains(ball.bounds, mousePos)) {
@@ -16,6 +18,7 @@ window.addEventListener("mousedown", (event) => {
     }
 });
 
+//Détéction de la souris pour charger le tir
 window.addEventListener("mousemove", (event) => {
     if (dragging) {
         currentX = event.clientX;
@@ -29,6 +32,7 @@ let currentGround = ground;
     currentGround = newGround;
 } Plus utilisée */
 
+//Détection de la souris pour lancer la balle
 window.addEventListener("mouseup", (event) => {
     if (!dragging) return;
     dragging = false;
@@ -48,6 +52,8 @@ window.addEventListener("mouseup", (event) => {
     }
 });
 
+
+//Dessine le vecteur de force
 function drawVector(context) {
     if (dragging) {
         context.save();
@@ -62,6 +68,7 @@ function drawVector(context) {
     }
 }
 
+//Dessine la balle
 function drawBall(context) {
     context.save();
     context.fillStyle = "red";

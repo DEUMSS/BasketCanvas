@@ -13,12 +13,13 @@ const hoopY = window.innerHeight / 3;
 const phiscalLeftHoopX = hoopX - 40;
 const phiscalRightHoopX = hoopX + 40;
 
-// Création du panier
+// Création du panier physique
 const rimLeft = Matter.Bodies.circle(phiscalLeftHoopX, hoopY + 50, 5, { isStatic: true });
 const rimRight = Matter.Bodies.circle(phiscalRightHoopX, hoopY + 50, 5, { isStatic: true });
 
 Matter.World.add(world, [rimLeft, rimRight]);
 
+//Fonction pour que le panier soit en mouvement
 function moveBasket(level) {
     const slowSpeed = 1;
     const fastSpeed = 2;
@@ -39,6 +40,7 @@ function moveBasket(level) {
     }
 }
 
+//Création du dessin du panier
 function drawBasket(context) {
     context.save();
     context.strokeStyle = "white";
