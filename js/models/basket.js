@@ -19,6 +19,26 @@ const rimRight = Matter.Bodies.circle(phiscalRightHoopX, hoopY + 50, 5, { isStat
 
 Matter.World.add(world, [rimLeft, rimRight]);
 
+function moveBasket(level) {
+    const slowSpeed = 1;
+    const fastSpeed = 2;
+    const speed = level < 5 ? slowSpeed : (level >= 5 && level < 10 ? fastSpeed : 0);
+
+    if (speed > 0) {
+        if (rimLeft.position.x <= 40) {
+            // Déplacement vers la droite
+            Matter.Body.setPosition(rimLeft, { x: rimLeft.position.x + speed, y: rimLeft.position.y });
+            Matter.Body.setPosition(rimRight, { x: rimRight.position.x + speed, y: rimRight.position.y });
+            hoopX += speed;
+        } else if (rimRight.position.x >= window.innerWidth - 40) {
+            // Déplacement vers la gauche
+            Matter.Body.setPosition(rimLeft, { x: rimLeft.position.x - speed, y: rimLeft.position.y });
+            Matter.Body.setPosition(rimRight, { x: rimRight.position.x - speed, y: rimRight.position.y });
+            hoopX -= speed;
+        }
+    }
+}
+
 function drawBasket(context) {
     context.save();
     context.strokeStyle = "white";
@@ -40,6 +60,20 @@ function drawBasket(context) {
             context.beginPath();
             context.moveTo(startX, startY);
             context.lineTo(endX, endY);
+            context.stroke(); 
+        }
+    }
+
+    for (let row = 0; row < netRows; row++) {
+        for (let col = 0; col < netCols; col++) {
+            const startX = (hoopX - netWidth / 2 + (col + 1) * spacingX) ;
+            const startY = hoopY + 40 + row * spacingY;
+            const endX = startX - spacingX ;
+            const endY = startY + spacingY;
+
+            context.beginPath();
+            context.moveTo(startX, startY);
+            context.lineTo(endX, endY);
             context.stroke();
         }
     }
@@ -56,4 +90,4 @@ function drawBasket(context) {
     context.restore();
 }
 
-export { drawBasket, phiscalLeftHoopX, phiscalRightHoopX, hoopY };
+export { drawBasket, phiscalLeftHoopX, phiscalRightHoopX, hoopY, moveBasket };

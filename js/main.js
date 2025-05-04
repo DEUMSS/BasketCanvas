@@ -1,12 +1,12 @@
-import { engine, world, ground, width, height } from './core/engine.js';
-import { drawBasket, phiscalLeftHoopX, phiscalRightHoopX, hoopY } from './models/basket.js';
-import { drawVector, drawBall, ball, updateGround } from './models/ball.js';
+import { engine, world, ground, width, height, newObstacle } from './core/engine.js';
+import { drawBasket, phiscalLeftHoopX, phiscalRightHoopX, hoopY, moveBasket } from './models/basket.js';
+import { drawVector, drawBall, ball/*, updateGround*/ } from './models/ball.js';
 
 const { Engine, World, Events, Render, Runner } = Matter;
 
-let groundActive = true;
 let needsReset = false;
 let ballLaunched = false;
+let level = 1;
 
 // Création du renderer
 const render = Render.create({
@@ -22,6 +22,22 @@ const render = Render.create({
 // Mise à jour du jeu au passage dans le panier
 let ballInHoopArea = false;
 
+function nextLevel(){
+    console.log("Next level!");
+    level ++;
+    console.log("Current level: " + level);
+    if(level = 2){
+        moveBasket(level); // Déplace le panier
+    }else if(level > 2 && level < 5){
+        console.log("Creating new obstacles...");
+        newObstacle(); // Crée un nouvel obstacle
+    }else if(level >= 5 && level < 10){
+        moveBasket(level); // Déplace le panier
+        newObstacle(); // Crée un nouvel obstacle
+    }
+};
+
+
 Events.on(engine, "afterUpdate", () => {
     const isInHoopArea =
         ball.position.x > phiscalLeftHoopX &&
@@ -32,12 +48,16 @@ Events.on(engine, "afterUpdate", () => {
     if (isInHoopArea && !ballInHoopArea) {
         console.log("Ball entered the hoop area");
         ballInHoopArea = true;
+        Matter.World.add(world, ground); // Ajoute le sol au monde
+        nextLevel(); // Passe au niveau suivant
 
-        // Déclenche la réinitialisation dans renderLoop
-        needsReset = true;
     } else if (!isInHoopArea && ballInHoopArea) {
         console.log("Ball left the hoop area");
         ballInHoopArea = false;
+
+    } else if (ball.position.y > height){
+        console.log("Ball fell off the screen");
+        needsReset = true; // Indique qu'une réinitialisation est nécessaire
     }
 
 });
@@ -51,23 +71,25 @@ Runner.run(engine);
     if (needsReset) {
         console.log("Resetting world and all elements...");
 
-        Matter.World.clear(world, false); 
+        //Matter.World.clear(world, false); Plus utilisée
 
-        const newGround = Matter.Bodies.rectangle(width / 2, height - 100, width, 40, { isStatic: true });
-        const leftWall = Matter.Bodies.rectangle(0, height / 2, 40, height, { isStatic: true });
-        const rightWall = Matter.Bodies.rectangle(width, height / 2, 40, height, { isStatic: true });
+        //const newGround = Matter.Bodies.rectangle(width / 2, height - 100, width, 40, { isStatic: true }); Plus utilisée
+        //const leftWall = Matter.Bodies.rectangle(0, height / 2, 40, height, { isStatic: true }); Plus utilisée
+        //const rightWall = Matter.Bodies.rectangle(width, height / 2, 40, height, { isStatic: true }); Plus utilisée
 
         Matter.Body.setPosition(ball, { x: width / 2, y: height - 110 });
         Matter.Body.setVelocity(ball, { x: 0, y: 0 });
 
-        Matter.World.add(world, [newGround, leftWall, rightWall, ball]);
+        Matter.World.add(world, ground); // Ajoute le sol au monde
 
-        updateGround(newGround);
+        //Matter.World.add(world, [newGround, leftWall, rightWall, ball]); Plus utilisée
+
+        //updateGround(newGround); Plus utilisée
 
         console.log("World reset complete.");
 
+        //level = 1; // Réinitialise le niveau
         needsReset = false;
-        groundActive = true;
         ballLaunched = false;
     }
 
@@ -79,3 +101,4 @@ Runner.run(engine);
 
     requestAnimationFrame(renderLoop);
 })();
+

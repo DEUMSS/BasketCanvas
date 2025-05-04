@@ -20,4 +20,9 @@ Matter.World.add(world, [ground, leftWall, rightWall]);
 
 let groundActive = true;
 
-export { engine, world, render, ground, groundActive, width, height };
+function newObstacle() {
+    const obstacle = Matter.Bodies.rectangle(Math.random() * width - 90, Math.random() * height - 150, 50, 50, { isStatic: true, render: { fillStyle: 'purple' }});
+    Matter.World.add(world, obstacle);
+}
+
+export { engine, world, render, ground, groundActive, width, height, newObstacle };

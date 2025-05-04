@@ -25,9 +25,9 @@ window.addEventListener("mousemove", (event) => {
 
 let currentGround = ground; 
 
-function updateGround(newGround) {
+/*function updateGround(newGround) {
     currentGround = newGround;
-}
+} Plus utilisée */
 
 window.addEventListener("mouseup", (event) => {
     if (!dragging) return;
@@ -72,4 +72,4 @@ function drawBall(context) {
     context.restore();
 }
 
-export { ball, drawVector, drawBall, updateGround };
+export { ball, drawVector, drawBall };//, updateGround
