@@ -1,4 +1,4 @@
-import { engine, world, ground, width, height, newObstacle } from './core/engine.js';
+import { engine, world, ground, width, height, newObstacle, removeObstacle } from './core/engine.js';
 import { drawBasket, phiscalLeftHoopX, phiscalRightHoopX, hoopY, moveBasket } from './models/basket.js';
 import { drawVector, drawBall, ball/*, updateGround*/ } from './models/ball.js';
 
@@ -7,6 +7,7 @@ const { Engine, World, Events, Render, Runner } = Matter;
 let needsReset = false;
 let ballLaunched = false;
 let level = 1;
+
 
 // Création du render
 const render = Render.create({
@@ -27,10 +28,9 @@ function nextLevel(){
     console.log("Next level!");
     level ++;
     console.log("Current level: " + level);
-    if(level = 2){
+    if(level === 2){
         moveBasket(level); // Déplace le panier
     }else if(level > 2 && level < 5){
-        console.log("Creating new obstacles...");
         newObstacle(); // Crée un nouvel obstacle
     }else if(level >= 5 && level < 10){
         moveBasket(level); // Déplace le panier
@@ -78,6 +78,10 @@ Runner.run(engine);
         //const leftWall = Matter.Bodies.rectangle(0, height / 2, 40, height, { isStatic: true }); Plus utilisée
         //const rightWall = Matter.Bodies.rectangle(width, height / 2, 40, height, { isStatic: true }); Plus utilisée
 
+        //Supression des obstacles
+        removeObstacle(); 
+
+        // Réinitialise la position de la balle
         Matter.Body.setPosition(ball, { x: width / 2, y: height - 110 });
         Matter.Body.setVelocity(ball, { x: 0, y: 0 });
 
@@ -89,7 +93,7 @@ Runner.run(engine);
 
         console.log("World reset complete.");
 
-        //level = 1; // Réinitialise le niveau
+        level = 1; // Réinitialise le niveau
         needsReset = false;
         ballLaunched = false;
     }

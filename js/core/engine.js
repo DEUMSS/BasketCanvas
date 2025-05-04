@@ -20,10 +20,20 @@ Matter.World.add(world, [ground, leftWall, rightWall]);
 
 let groundActive = true;
 
+let obstacles = [];
 //Création de nouveaux obstacles
 function newObstacle() {
     const obstacle = Matter.Bodies.rectangle(Math.random() * width - 90, Math.random() * height - 150, 50, 50, { isStatic: true, render: { fillStyle: 'purple' }});
     Matter.World.add(world, obstacle);
+    obstacles.push(obstacle);
+    console.log("Creating new obstacles...");
 }
 
-export { engine, world, render, ground, groundActive, width, height, newObstacle };
+function removeObstacle() {
+    obstacles.forEach((obstacle) => {
+        Matter.World.remove(world, obstacle);
+    });
+    obstacles = []; // Réinitialise le tableau des obstacles
+}
+
+export { engine, world, render, ground, groundActive, width, height, newObstacle, removeObstacle };
